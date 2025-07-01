@@ -20,7 +20,11 @@ import java.util.TreeSet;
 // Sistema principal que administra la tienda de cómics y usuarios.
 // Utiliza colecciones, manejo de archivos y validaciones para una gestión robusta.
 public class ComicShopApp {
-
+    // Rutas de archivos centralizadas.
+    private static final String RUTA_COMICS = "comics.csv";
+    private static final String RUTA_USUARIOS_TXT = "usuarios.txt";
+    private static final String RUTA_USUARIOS_CSV = "usuarios.csv";
+    
     // Almacena todos los cómics disponibles.
     static ArrayList<Comics> comicsDisponibles = new ArrayList<>();
     // Asocia RUT con los objetos Usuario.
@@ -42,21 +46,21 @@ public class ComicShopApp {
                 opcion = Integer.parseInt(sc.nextLine().trim());
                 switch (opcion) {
                     case 1 ->
-                        cargarComicsDesdeArchivo("comics.csv");
+                        cargarComicsDesdeArchivo("RUTA_COMICS");
                     case 2 ->
-                        registrarUsuario();
+                        mostrarComicsDisponibles(); 
                     case 3 ->
-                        agregarCompraUsuario();
+                        registrarUsuario();
                     case 4 ->
-                        guardarUsuarios("usuarios.txt");
+                        agregarCompraUsuario(); 
                     case 5 ->
-                        mostrarComicsDisponibles();
+                        guardarUsuarios("RUTA_USUARIOS_TXT");
                     case 6 ->
                         eliminarUsuario();
                     case 7 ->
                         eliminarComic();
                     case 8 ->
-                        exportarUsuariosCSV("usuarios.csv");
+                        exportarUsuariosCSV("RUTA_USUARIOS_CSV");
                     case 9 ->
                         System.out.println("\nGracias por usar ComicCollectorSystem. ¡Hasta la próxima!");
                     default ->
@@ -76,15 +80,15 @@ public class ComicShopApp {
     public static void mostrarMenu() {
         System.out.println("\n=== ComicCollectorSystem ===\n");
         System.out.println("1. Cargar cómics desde archivo");
-        System.out.println("2. Registrar nuevo usuario");
-        System.out.println("3. Agregar compra a usuario");
-        System.out.println("4. Guardar usuarios y compras");
-        System.out.println("5. Mostrar cómics disponibles");
+        System.out.println("2. Mostrar cómics disponibles");
+        System.out.println("3. Registrar nuevo usuario");
+        System.out.println("4. Compra");
+        System.out.println("5. Guardar usuarios y compras");
         System.out.println("6. Eliminar usuario");
         System.out.println("7. Eliminar cómic");
         System.out.println("8. Exportar usuarios a CSV");
         System.out.println("9. Salir");
-        System.out.println("\nSelecciona una opción:");
+        System.out.println("Selecciona una opción: ");
     }
 
     // Carga cómics desde un archivo CSV
@@ -92,11 +96,12 @@ public class ComicShopApp {
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String linea;
             int contador = 0;
-
+            
+            // Saltar cabecera del CSV
+            br.readLine();
+            
             while ((linea = br.readLine()) != null) {
-                if (procesarLineaComic(linea)) {
-                    contador++;
-                }
+                if (procesarLineaComic(linea)) contador++;
             }
 
             System.out.println("\nSe cargaron " + contador + " cómics correctamente.");
@@ -133,13 +138,12 @@ public class ComicShopApp {
     public static void registrarUsuario() {
         try {
             System.out.print("Ingrese RUT: ");
-            String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", ""); // Elimina puntos y espacios.
+            String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", ""); // Elimina puntos y espacios
 
             if (!Validacion.validarRut(rut)) {
                 System.out.println("\nFormato de RUT inválido.");
                 return;
             }
-
             if (usuarios.containsKey(rut)) {
                 System.out.println("\nEl usuario ya está registrado.");
                 return;
@@ -147,13 +151,17 @@ public class ComicShopApp {
 
             System.out.print("Ingrese nombre: ");
             String nombre = sc.nextLine().trim();
+            System.out.print("Ingrese apellido paterno: ");
+            String apellidoPaterno = sc.nextLine().trim();
+            System.out.print("Ingrese apellido materno: ");
+            String apellidoMaterno = sc.nextLine().trim();
 
-            if (!Validacion.validarNombre(nombre)) {
-                System.out.println("\nEl nombre debe contener solo letras y espacios.");
+            if (!Validacion.validarNombre(nombre) || !Validacion.validarNombre(apellidoPaterno) || !Validacion.validarNombre(apellidoMaterno)) {
+                System.out.println("\nLos nombres y apellidos deben contener solo letras y espacios.");
                 return;
             }
 
-            usuarios.put(rut, new Usuarios(rut, nombre));
+            usuarios.put(rut, new Usuarios(rut, nombre, apellidoPaterno, apellidoMaterno));
             usuariosOrdenados.add(rut);
             System.out.println("\nUsuario registrado exitosamente.");
         } catch (Exception e) {
@@ -193,25 +201,7 @@ public class ComicShopApp {
         }
     }
 
-    // Guarda los usuarios y sus compras en un archivo de texto.
-    public static void guardarUsuarios(String archivo) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
-            for (String rut : usuariosOrdenados) {
-                Usuarios u = usuarios.get(rut);
-                bw.write(u.toString() + "\n");
-                for (Comics c : u.getCompras()) {
-                    bw.write("  -> " + c + "\n");
-                }
-            }
-
-            System.out.println("\nUsuarios y compras guardados correctamente en " + archivo);
-        } catch (IOException e) {
-            System.out.println("\nError al guardar archivo: " + e.getMessage());
-        }
-    }
-
-    // Muestra todos los cómics disponibles actualmente.
-    public static void mostrarComicsDisponibles() {
+        public static void mostrarComicsDisponibles() {
         if (comicsDisponibles.isEmpty()) {
             System.out.println("\nNo hay cómics disponibles.");
         } else {
@@ -222,6 +212,37 @@ public class ComicShopApp {
         }
     }
     
+    // Guarda los usuarios y sus compras en un archivo de texto.
+    public static void guardarUsuarios(String archivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
+            for (String rut : usuariosOrdenados) {
+                Usuarios u = usuarios.get(rut);
+                bw.write(u.toString() + "\n");
+                for (Comics c : u.getCompras()) {
+                    bw.write("  -> " + c + "\n");
+                }
+            }
+            System.out.println("\nUsuarios y compras guardados correctamente en " + archivo);
+        } catch (IOException e) {
+            System.out.println("\nError al guardar archivo: " + e.getMessage());
+        }
+    }
+    
+    // Exporta los usuarios a un archivo CSV con nombre y total de compras.
+    public static void exportarUsuariosCSV(String archivo) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(archivo))) {
+            pw.println("RUT,Nombre,Apellido Paterno,Apellido Materno,Cantidad de Compras");
+            for (String rut : usuariosOrdenados) {
+                Usuarios u = usuarios.get(rut);
+                pw.printf("%s,%s,%s,%s,%d%n",
+                        u.getRut(), u.getNombre(), u.getApellidoPaterno(), u.getApellidoMaterno(), u.getCompras().size());
+            }
+            System.out.println("Usuarios exportados correctamente a " + archivo);
+        } catch (IOException e) {
+            System.out.println("Error al exportar CSV: " + e.getMessage());
+        }
+    }
+
     // Elimina un usuario del sistema por RUT.
     public static void eliminarUsuario() {
         System.out.print("Ingrese RUT del usuario a eliminar: ");
@@ -233,8 +254,8 @@ public class ComicShopApp {
             System.out.println("Usuario no encontrado.");
         }
     }
-    
-    // Elimina un cómic del sistema por su código
+
+    // Elimina un cómic del sistema por su código.
     public static void eliminarComic() {
         System.out.print("Ingrese código del cómic a eliminar: ");
         String codigo = sc.nextLine().trim();
@@ -245,20 +266,6 @@ public class ComicShopApp {
             System.out.println("Cómic eliminado correctamente.");
         } else {
             System.out.println("Cómic no encontrado.");
-        }
-    }
-    
-        // Exporta los usuarios a un archivo CSV con nombre y total de compras
-    public static void exportarUsuariosCSV(String archivo) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(archivo))) {
-            pw.println("RUT,Nombre,Cantidad de Compras");
-            for (String rut : usuariosOrdenados) {
-                Usuarios u = usuarios.get(rut);
-                pw.printf("%s,%s,%d%n", u.getRut(), u.getNombre(), u.getCompras().size());
-            }
-            System.out.println("Usuarios exportados correctamente a " + archivo);
-        } catch (IOException e) {
-            System.out.println("Error al exportar CSV: " + e.getMessage());
         }
     }
 
