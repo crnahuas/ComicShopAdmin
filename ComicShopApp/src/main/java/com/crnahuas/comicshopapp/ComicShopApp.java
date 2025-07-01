@@ -63,7 +63,7 @@ public class ComicShopApp {
                     case 8 ->
                         exportarUsuariosCSV(RUTA_USUARIOS_CSV);
                     case 9 ->
-                        System.out.println("\nGracias por usar ComicCollectorSystem. ¡Hasta la próxima!");
+                        System.out.println("\nGracias por usar ComicShopApp. ¡Hasta la próxima!");
                     default ->
                         System.out.println("\nOpción inválida. Intente nuevamente.");
                 }
@@ -79,68 +79,59 @@ public class ComicShopApp {
 
     // Opciones del menú.
     public static void mostrarMenu() {
-        System.out.println("\n=== ComicCollectorSystem ===\n");
+        System.out.println("\n=== ComicShopApp ===\n");
         System.out.println("1. Cargar cómics desde archivo");
         System.out.println("2. Mostrar cómics disponibles");
         System.out.println("3. Registrar nuevo usuario");
-        System.out.println("4. Compra");
-        System.out.println("5. Guardar usuarios y compras");
+        System.out.println("4. Compra cómics");
+        System.out.println("5. Guardar usuario y compras");
         System.out.println("6. Eliminar usuario");
         System.out.println("7. Eliminar cómic");
         System.out.println("8. Exportar usuarios a CSV");
         System.out.println("9. Salir");
-        System.out.println("Selecciona una opción: ");
+        System.out.print("\nSelecciona una opción: ");
     }
 
     // Carga cómics desde un archivo CSV
-    public static void cargarComicsDesdeArchivo(String ruta) {
-        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+    public static void cargarComicsDesdeArchivo(String archivo) {
+        int contador = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
-            int contador = 0;
-
-            // Saltar cabecera del CSV
-            br.readLine();
-
+            br.readLine(); // Saltar encabezado
             while ((linea = br.readLine()) != null) {
-                if (procesarLineaComic(linea)) {
+                String[] datos = linea.split(",");
+                if (datos.length != 4) {
+                    System.out.println("\nError de formato en línea: " + linea);
+                    continue;
+                }
+                String codigo = datos[0].trim();
+                if (codigosUnicos.contains(codigo)) {
+                    System.out.println("Código duplicado ignorado: " + codigo);
+                    continue;
+                }
+                try {
+                    String titulo = datos[1].trim();
+                    String autor = datos[2].trim();
+                    double precio = Double.parseDouble(datos[3].trim());
+
+                    Comics nuevo = new Comics(codigo, titulo, autor, precio);
+                    comicsDisponibles.add(nuevo);
+                    codigosUnicos.add(codigo);
                     contador++;
+                } catch (NumberFormatException e) {
+                    System.out.println("\nError de formato numérico en línea: " + linea);
                 }
             }
-
-            System.out.println("\nSe cargaron " + contador + " cómics correctamente.");
-        } catch (FileNotFoundException e) {
-            System.out.println("\nEl archivo no fue encontrado: " + ruta);
+            System.out.println("\nCómics cargados: " + contador);
         } catch (IOException e) {
-            System.out.println("\nError al leer el archivo: " + e.getMessage());
+            System.out.println("\nNo se pudo leer el archivo: " + e.getMessage());
         }
-    }
-
-    // Procesa una línea del CSV y la convierte en objeto Comic.
-    private static boolean procesarLineaComic(String linea) {
-        try {
-            String[] datos = linea.split(",");
-            if (datos.length < 4) {
-                System.out.println("\nLínea incompleta: " + linea);
-                return false;
-            }
-
-            Comics comic = new Comics(datos[0], datos[1], datos[2], Double.parseDouble(datos[3]));
-            if (codigosUnicos.add(comic.getCodigo())) {
-                comicsDisponibles.add(comic);
-                return true;
-            }
-
-        } catch (NumberFormatException e) {
-            System.out.println("\nError de formato numérico en línea: " + linea);
-        }
-
-        return false;
     }
 
     // Registra un nuevo usuario con validación de RUT y nombre.
     public static void registrarUsuario() {
         try {
-            System.out.print("Ingrese RUT: ");
+            System.out.print("\nIngrese RUT (XXXXXXXX-X o XX.XXX.XXX-X): ");
             String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", ""); // Elimina puntos y espacios
 
             if (!Validacion.validarRut(rut)) {
@@ -175,7 +166,7 @@ public class ComicShopApp {
     // Agrega una compra a un usuario registrado.
     public static void agregarCompraUsuario() {
         try {
-            System.out.print("Ingrese RUT del usuario: ");
+            System.out.print("\nIngrese RUT del usuario (XXXXXXXX-X o XX.XXX.XXX-X): ");
             String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", "");
 
             Usuarios usuario = usuarios.get(rut);
@@ -185,7 +176,7 @@ public class ComicShopApp {
             }
 
             mostrarComicsDisponibles();
-            System.out.print("Ingrese código del cómic a comprar: ");
+            System.out.print("\nIngrese código del cómic a comprar: ");
             String codigo = sc.nextLine().trim();
 
             Optional<Comics> comic = comicsDisponibles.stream()
@@ -219,17 +210,28 @@ public class ComicShopApp {
 
     // Guarda los usuarios y sus compras en un archivo de texto.
     public static void guardarUsuarios(String archivo) {
+        if (usuarios.isEmpty()) {
+            System.out.println("\nNo hay usuarios registrados.");
+            return;
+        }
+
+        System.out.print("\nIngrese RUT del usuario a guardar (XXXXXXXX-X o XX.XXX.XXX-X): ");
+        String rut = sc.nextLine().trim().replaceAll("[.\\s]", "");
+
+        if (!usuarios.containsKey(rut)) {
+            System.out.println("\nUsuario no encontrado.");
+            return;
+        }
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
-            for (String rut : usuariosOrdenados) {
-                Usuarios u = usuarios.get(rut);
-                bw.write(u.toString() + "\n");
-                for (Comics c : u.getCompras()) {
-                    bw.write("  -> " + c + "\n");
-                }
+            Usuarios u = usuarios.get(rut);
+            bw.write(u.toString() + "\n");
+            for (Comics c : u.getCompras()) {
+                bw.write("  -> " + c + "\n");
             }
-            System.out.println("\nUsuarios y compras guardados correctamente en " + archivo);
+            System.out.println("\nUsuario y sus compras guardados correctamente.");
         } catch (IOException e) {
-            System.out.println("\nError al guardar archivo: " + e.getMessage());
+            System.out.println("\nError al guardar el archivo: " + e.getMessage());
         }
     }
 
@@ -242,9 +244,9 @@ public class ComicShopApp {
                 pw.printf("%s,%s,%s,%s,%d%n",
                         u.getRut(), u.getNombre(), u.getApellidoPaterno(), u.getApellidoMaterno(), u.getCompras().size());
             }
-            System.out.println("Usuarios exportados correctamente a " + archivo);
+            System.out.println("\nUsuarios exportados correctamente a " + archivo);
         } catch (IOException e) {
-            System.out.println("Error al exportar CSV: " + e.getMessage());
+            System.out.println("\nError al exportar CSV: " + e.getMessage());
         }
     }
 
@@ -258,7 +260,7 @@ public class ComicShopApp {
         for (String rut : usuariosOrdenados) {
             System.out.println(rut + " - " + usuarios.get(rut).getNombre());
         }
-        System.out.print("Ingrese el RUT del usuario a eliminar: ");
+        System.out.print("\nIngrese el RUT del usuario a eliminar (XXXXXXXX-X o XX.XXX.XXX-X): ");
         String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", "");
 
         if (usuarios.containsKey(rut)) {
