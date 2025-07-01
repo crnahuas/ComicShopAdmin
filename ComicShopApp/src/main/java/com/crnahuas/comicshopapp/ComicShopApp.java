@@ -20,11 +20,12 @@ import java.util.TreeSet;
 // Sistema principal que administra la tienda de cómics y usuarios.
 // Utiliza colecciones, manejo de archivos y validaciones para una gestión robusta.
 public class ComicShopApp {
+
     // Rutas de archivos centralizadas.
     private static final String RUTA_COMICS = "comics.csv";
     private static final String RUTA_USUARIOS_TXT = "usuarios.txt";
     private static final String RUTA_USUARIOS_CSV = "usuarios.csv";
-    
+
     // Almacena todos los cómics disponibles.
     static ArrayList<Comics> comicsDisponibles = new ArrayList<>();
     // Asocia RUT con los objetos Usuario.
@@ -48,11 +49,11 @@ public class ComicShopApp {
                     case 1 ->
                         cargarComicsDesdeArchivo(RUTA_COMICS);
                     case 2 ->
-                        mostrarComicsDisponibles(); 
+                        mostrarComicsDisponibles();
                     case 3 ->
                         registrarUsuario();
                     case 4 ->
-                        agregarCompraUsuario(); 
+                        agregarCompraUsuario();
                     case 5 ->
                         guardarUsuarios(RUTA_USUARIOS_TXT);
                     case 6 ->
@@ -96,12 +97,14 @@ public class ComicShopApp {
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String linea;
             int contador = 0;
-            
+
             // Saltar cabecera del CSV
             br.readLine();
-            
+
             while ((linea = br.readLine()) != null) {
-                if (procesarLineaComic(linea)) contador++;
+                if (procesarLineaComic(linea)) {
+                    contador++;
+                }
             }
 
             System.out.println("\nSe cargaron " + contador + " cómics correctamente.");
@@ -191,6 +194,8 @@ public class ComicShopApp {
 
             if (comic.isPresent()) {
                 usuario.agregarCompra(comic.get());
+                comicsDisponibles.remove(comic.get()); // Retira del stock.
+                codigosUnicos.remove(comic.get().getCodigo()); // Retira del código.
                 System.out.println("\nCompra registrada correctamente.");
             } else {
                 System.out.println("\nCómic no encontrado.");
@@ -201,7 +206,7 @@ public class ComicShopApp {
         }
     }
 
-        public static void mostrarComicsDisponibles() {
+    public static void mostrarComicsDisponibles() {
         if (comicsDisponibles.isEmpty()) {
             System.out.println("\nNo hay cómics disponibles.");
         } else {
@@ -211,7 +216,7 @@ public class ComicShopApp {
             }
         }
     }
-    
+
     // Guarda los usuarios y sus compras en un archivo de texto.
     public static void guardarUsuarios(String archivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
@@ -227,7 +232,7 @@ public class ComicShopApp {
             System.out.println("\nError al guardar archivo: " + e.getMessage());
         }
     }
-    
+
     // Exporta los usuarios a un archivo CSV con nombre y total de compras.
     public static void exportarUsuariosCSV(String archivo) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(archivo))) {
@@ -245,27 +250,48 @@ public class ComicShopApp {
 
     // Elimina un usuario del sistema por RUT.
     public static void eliminarUsuario() {
-        System.out.print("Ingrese RUT del usuario a eliminar: ");
+        if (usuariosOrdenados.isEmpty()) {
+            System.out.println("\nNo hay usuarios registrados.");
+            return;
+        }
+        System.out.println("\n--- Lista de Usuarios ---");
+        for (String rut : usuariosOrdenados) {
+            System.out.println(rut + " - " + usuarios.get(rut).getNombre());
+        }
+        System.out.print("Ingrese el RUT del usuario a eliminar: ");
         String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", "");
-        if (usuarios.remove(rut) != null) {
+
+        if (usuarios.containsKey(rut)) {
+            usuarios.remove(rut);
             usuariosOrdenados.remove(rut);
-            System.out.println("Usuario eliminado correctamente.");
+            System.out.println("\nUsuario eliminado correctamente.");
         } else {
-            System.out.println("Usuario no encontrado.");
+            System.out.println("\nUsuario no encontrado.");
         }
     }
 
     // Elimina un cómic del sistema por su código.
     public static void eliminarComic() {
-        System.out.print("Ingrese código del cómic a eliminar: ");
-        String codigo = sc.nextLine().trim();
-        boolean eliminado = comicsDisponibles.removeIf(c -> c.getCodigo().equalsIgnoreCase(codigo));
+        if (comicsDisponibles.isEmpty()) {
+            System.out.println("\nNo hay cómics para eliminar.");
+            return;
+        }
+        System.out.println("\n--- Lista de Cómics Disponibles ---");
+        for (Comics c : comicsDisponibles) {
+            System.out.println(c);
+        }
+        System.out.print("Ingrese el código del cómic a eliminar: ");
+        String codigo = sc.nextLine().trim().toUpperCase();
 
-        if (eliminado) {
+        Optional<Comics> comicAEliminar = comicsDisponibles.stream()
+                .filter(c -> c.getCodigo().equalsIgnoreCase(codigo)).findFirst();
+
+        if (comicAEliminar.isPresent()) {
+            comicsDisponibles.remove(comicAEliminar.get());
             codigosUnicos.remove(codigo);
-            System.out.println("Cómic eliminado correctamente.");
+            System.out.println("\nCómic eliminado correctamente.");
         } else {
-            System.out.println("Cómic no encontrado.");
+            System.out.println("\nCómic no encontrado.");
         }
     }
 
