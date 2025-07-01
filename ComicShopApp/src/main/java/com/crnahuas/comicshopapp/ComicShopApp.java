@@ -220,5 +220,31 @@ public class ComicShopApp {
             }
         }
     }
+    
+    // Elimina un usuario del sistema por RUT.
+    public static void eliminarUsuario() {
+        System.out.print("Ingrese RUT del usuario a eliminar: ");
+        String rut = sc.nextLine().trim().replaceAll("\\.|\\s+", "");
+        if (usuarios.remove(rut) != null) {
+            usuariosOrdenados.remove(rut);
+            System.out.println("Usuario eliminado correctamente.");
+        } else {
+            System.out.println("Usuario no encontrado.");
+        }
+    }
+    
+    // Elimina un cómic del sistema por su código
+    public static void eliminarComic() {
+        System.out.print("Ingrese código del cómic a eliminar: ");
+        String codigo = sc.nextLine().trim();
+        boolean eliminado = comicsDisponibles.removeIf(c -> c.getCodigo().equalsIgnoreCase(codigo));
+
+        if (eliminado) {
+            codigosUnicos.remove(codigo);
+            System.out.println("Cómic eliminado correctamente.");
+        } else {
+            System.out.println("Cómic no encontrado.");
+        }
+    }
 
 }
