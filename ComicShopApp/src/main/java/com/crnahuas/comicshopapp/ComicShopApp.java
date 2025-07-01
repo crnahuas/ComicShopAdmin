@@ -46,7 +46,7 @@ public class ComicShopApp {
                 opcion = Integer.parseInt(sc.nextLine().trim());
                 switch (opcion) {
                     case 1 ->
-                        cargarComicsDesdeArchivo("RUTA_COMICS");
+                        cargarComicsDesdeArchivo(RUTA_COMICS);
                     case 2 ->
                         mostrarComicsDisponibles(); 
                     case 3 ->
@@ -54,13 +54,13 @@ public class ComicShopApp {
                     case 4 ->
                         agregarCompraUsuario(); 
                     case 5 ->
-                        guardarUsuarios("RUTA_USUARIOS_TXT");
+                        guardarUsuarios(RUTA_USUARIOS_TXT);
                     case 6 ->
                         eliminarUsuario();
                     case 7 ->
                         eliminarComic();
                     case 8 ->
-                        exportarUsuariosCSV("RUTA_USUARIOS_CSV");
+                        exportarUsuariosCSV(RUTA_USUARIOS_CSV);
                     case 9 ->
                         System.out.println("\nGracias por usar ComicCollectorSystem. ¡Hasta la próxima!");
                     default ->
