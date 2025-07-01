@@ -2,6 +2,10 @@ package com.crnahuas.comicshopapp;
 
 import com.crnahuas.comicshopapp.comics.Comics;
 import com.crnahuas.comicshopapp.users.Usuarios;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +35,6 @@ public class ComicShopApp {
             mostrarMenu();
             try {
                 opcion = Integer.parseInt(sc.nextLine().trim());
-
                 switch (opcion) {
                     case 1 ->
                         cargarComicsDesdeArchivo("comics.csv");
@@ -63,4 +66,38 @@ public class ComicShopApp {
         } while (opcion != 9);
 
     }
+    
+    // Opciones del menú.
+    public static void mostrarMenu() {
+        System.out.println("\n=== ComicCollectorSystem ===\n");
+        System.out.println("1. Cargar cómics desde archivo");
+        System.out.println("2. Registrar nuevo usuario");
+        System.out.println("3. Agregar compra a usuario");
+        System.out.println("4. Guardar usuarios y compras");
+        System.out.println("5. Mostrar cómics disponibles");
+        System.out.println("6. Eliminar usuario");
+        System.out.println("7. Eliminar cómic");
+        System.out.println("8. Exportar usuarios a CSV");
+        System.out.println("9. Salir");
+        System.out.println("\nSelecciona una opción:");
+    }
+    
+    // Carga cómics desde un archivo CSV
+    public static void cargarComicsDesdeArchivo(String ruta) {
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+            String linea;
+            int contador = 0;
+
+            while ((linea = br.readLine()) != null) {
+                if (procesarLineaComic(linea)) contador++;
+            }
+
+            System.out.println("\nSe cargaron " + contador + " cómics correctamente.");
+        } catch (FileNotFoundException e) {
+            System.out.println("\nEl archivo no fue encontrado: " + ruta);
+        } catch (IOException e) {
+            System.out.println("\nError al leer el archivo: " + e.getMessage());
+        }
+    }
+    
 }
