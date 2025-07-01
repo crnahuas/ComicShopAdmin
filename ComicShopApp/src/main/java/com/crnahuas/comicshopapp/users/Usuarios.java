@@ -1,5 +1,6 @@
 package com.crnahuas.comicshopapp.users;
 
+import com.crnahuas.comicshopapp.comics.Comics;
 import java.util.ArrayList;
 
 // Clase que representa un Usuario con RUT, nombre y lista de cómics comprados.
@@ -7,7 +8,7 @@ public class Usuarios {
 
     private String rut;
     private String nombre;
-    private ArrayList<Comic> compras;
+    private ArrayList<Comics> compras;
 
      // Constructor vacio.
     public Usuarios() {
@@ -29,18 +30,18 @@ public class Usuarios {
     }
     
     
-    public ArrayList<Comic> getCompras() {
+    public ArrayList<Comics> getCompras() {
         return compras;
     }
 
     // Agrega un cómic a la lista de compras del usuario.
-    public void agregarCompra(Comic comic) {
+    public void agregarCompra(Comics comic) {
         if (comic != null) {
             compras.add(comic);
         }
     }
     
-    // Representación del usuario para impresión o exportación.
+    // Representación usuario para impresión o exportación.
     @Override
     public String toString() {
         return String.format("RUT: %s, Nombre: %s, Total de cómics comprados: %d",

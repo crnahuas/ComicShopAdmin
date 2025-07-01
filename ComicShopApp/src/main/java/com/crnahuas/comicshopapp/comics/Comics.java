@@ -53,7 +53,7 @@ public class Comics {
         this.precio = precio;
     }
     
-    // Representación legible del cómic para mostrar o exportar.
+    // Representación cómic para mostrar o exportar.
     @Override
     public String toString() {
         return "[" + codigo + "] " + titulo + " - " + autor + " ($" + precio + ")";
