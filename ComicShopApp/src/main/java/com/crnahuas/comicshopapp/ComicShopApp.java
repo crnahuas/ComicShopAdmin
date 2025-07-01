@@ -159,7 +159,7 @@ public class ComicShopApp {
             System.out.println("\nError al registrar el usuario: " + e.getMessage());
         }
     }
-    
+
     // Agrega una compra a un usuario registrado.
     public static void agregarCompraUsuario() {
         try {
@@ -191,7 +191,7 @@ public class ComicShopApp {
             System.out.println("\nError al agregar compra: " + e.getMessage());
         }
     }
-    
+
     // Guarda los usuarios y sus compras en un archivo de texto.
     public static void guardarUsuarios(String archivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivo))) {
@@ -208,8 +208,8 @@ public class ComicShopApp {
             System.out.println("\nError al guardar archivo: " + e.getMessage());
         }
     }
-    
-   // Muestra todos los cómics disponibles actualmente.
+
+    // Muestra todos los cómics disponibles actualmente.
     public static void mostrarComicsDisponibles() {
         if (comicsDisponibles.isEmpty()) {
             System.out.println("\nNo hay cómics disponibles.");
