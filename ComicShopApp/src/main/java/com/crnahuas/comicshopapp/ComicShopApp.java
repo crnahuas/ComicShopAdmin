@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -244,6 +245,20 @@ public class ComicShopApp {
             System.out.println("Cómic eliminado correctamente.");
         } else {
             System.out.println("Cómic no encontrado.");
+        }
+    }
+    
+        // Exporta los usuarios a un archivo CSV con nombre y total de compras
+    public static void exportarUsuariosCSV(String archivo) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(archivo))) {
+            pw.println("RUT,Nombre,Cantidad de Compras");
+            for (String rut : usuariosOrdenados) {
+                Usuarios u = usuarios.get(rut);
+                pw.printf("%s,%s,%d%n", u.getRut(), u.getNombre(), u.getCompras().size());
+            }
+            System.out.println("Usuarios exportados correctamente a " + archivo);
+        } catch (IOException e) {
+            System.out.println("Error al exportar CSV: " + e.getMessage());
         }
     }
 
